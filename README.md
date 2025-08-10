@@ -1,6 +1,6 @@
 # Spatial Correlogram Tutorial (R)
 
-A short, self-contained tutorial for building **spatial correlograms** in R—computing **Moran’s I** (and optional **Geary’s C**) across distance bins using the built-in `meuse` dataset (no external files).
+A short, self-contained tutorial for building spatial correlograms in R—computing Moran’s I, and Geary’s C, across distance bins using the built-in `meuse` dataset (no external files). It may be useful to compare to the variogram tutorial as well. 
 
 ## What you'll learn
 - What correlograms show (vs. semivariograms)
