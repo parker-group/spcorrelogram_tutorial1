@@ -3,7 +3,7 @@ title: "Spatial Correlograms: Moran’s I & Geary’s C by Distance"
 output:
   html_document:
     toc: true
-    toc_float: true
+    toc_float: false
     number_sections: false
     code_folding: "hide"
     theme: cosmo        
