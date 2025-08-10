@@ -6,7 +6,7 @@ A short, self-contained tutorial for building **spatial correlograms** in R—co
 - What correlograms show (vs. semivariograms)
 - Building equal-width distance bins (rings)
 - Moran’s I by distance (with permutation p-values)
-- Optional: Geary’s C correlogram
+- Geary’s C correlogram
 
 ## Quick start
 
