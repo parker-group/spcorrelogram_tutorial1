@@ -1,0 +1,164 @@
+---
+title: "Spatial Correlograms: Moran’s I & Geary’s C by Distance"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: false
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+library(sf)
+library(sp)
+library(spdep)
+library(ggplot2)
+
+# No external helpers: keep everything self-contained in this Rmd
+```
+
+## 1) What is a spatial correlogram?
+
+A **spatial correlogram** summarizes how **spatial autocorrelation** changes with **distance**. We compute a statistic
+(e.g., Moran’s I or Geary’s C) for pairs of points in successive **distance bins** (rings), then plot the statistic
+against the bin midpoints. This is conceptually different from a semivariogram (which uses half the average squared
+difference).
+
+- **Moran’s I**: correlation-like; > 0 indicates positive autocorrelation, < 0 negative.
+- **Geary’s C**: dissimilarity index; < 1 indicates positive autocorrelation, > 1 negative.
+
+## 2) Example data (meuse)
+
+```{r}
+# 'meuse' ships with the {sp} package
+data(meuse, package = "sp")
+meuse_sf <- st_as_sf(meuse, coords = c("x","y"), crs = 28992)  # RD Amersfoort
+summary(meuse_sf$zinc)
+```
+
+> If your data are long/lat (EPSG:4326), project to meters first:
+```{r, eval=FALSE}
+# meuse_sf <- st_transform(meuse_sf, 32633)  # Example: UTM zone 33N
+```
+
+## 3) Create distance bins
+
+Choose a max distance and number of bins (equal width).
+
+```{r}
+max_distance <- 3000   # meters
+n_bins       <- 12
+edges <- seq(0, max_distance, length.out = n_bins + 1)
+bins  <- data.frame(
+  bin_id = seq_len(n_bins),
+  d_min  = edges[-length(edges)],
+  d_max  = edges[-1]
+)
+bins
+```
+
+## 4) Helper to build binary weights for a ring
+
+```{r}
+# Build binary weights for a distance ring [d_min, d_max)
+ring_listw <- function(coords, d_min, d_max, zero_ok = TRUE) {
+  nb <- spdep::dnearneigh(coords, d1 = d_min, d2 = d_max, longlat = FALSE)
+  lw <- spdep::nb2listw(nb, style = "B", zero.policy = zero_ok)
+  list(nb = nb, lw = lw)
+}
+```
+
+## 5) Moran’s I correlogram with permutation p-values
+
+```{r}
+moran_ring <- function(x, coords, d_min, d_max, nsim = 499, zero_ok = TRUE) {
+  w <- ring_listw(coords, d_min, d_max, zero_ok)
+  if (sum(unlist(w$lw$weights), na.rm = TRUE) == 0) {
+    return(list(I = NA_real_, p_mc = NA_real_, n_links = 0))
+  }
+  mc <- spdep::moran.mc(x, w$lw, nsim = nsim, zero.policy = zero_ok, alternative = "two.sided")
+  list(I = as.numeric(mc$statistic), p_mc = mc$p.value,
+       n_links = sum(unlist(w$lw$weights)))
+}
+
+coords <- st_coordinates(meuse_sf)
+x <- meuse_sf$zinc
+set.seed(123)
+
+res_I <- do.call(rbind, lapply(seq_len(nrow(bins)), function(i) {
+  b <- bins[i,]
+  r <- moran_ring(x, coords, b$d_min, b$d_max, nsim = 499, zero_ok = TRUE)
+  data.frame(bin_id = b$bin_id, d_min = b$d_min, d_max = b$d_max,
+             I = r$I, p_mc = r$p_mc, n_links = r$n_links)
+}))
+res_I
+```
+
+### Plot Moran’s I correlogram
+
+```{r, fig.height=4.2}
+res_I$mid <- (res_I$d_min + res_I$d_max)/2
+ggplot(res_I, aes(mid, I)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_point() + geom_line() +
+  labs(x = "Distance (bin mid, m)", y = "Moran's I",
+       title = "Moran's I Correlogram (meuse: zinc)") +
+  theme_minimal()
+```
+
+## 6) Geary’s C correlogram (optional)
+
+```{r}
+geary_ring <- function(x, coords, d_min, d_max, nsim = 499, zero_ok = TRUE) {
+  w <- ring_listw(coords, d_min, d_max, zero_ok)
+  if (sum(unlist(w$lw$weights), na.rm = TRUE) == 0) {
+    return(list(C = NA_real_, p_mc = NA_real_, n_links = 0))
+  }
+  mc <- spdep::geary.mc(x, w$lw, nsim = nsim, zero.policy = zero_ok, alternative = "two.sided")
+  list(C = as.numeric(mc$statistic), p_mc = mc$p.value,
+       n_links = sum(unlist(w$lw$weights)))
+}
+
+res_C <- do.call(rbind, lapply(seq_len(nrow(bins)), function(i) {
+  b <- bins[i,]
+  r <- geary_ring(x, coords, b$d_min, b$d_max, nsim = 499, zero_ok = TRUE)
+  data.frame(bin_id = b$bin_id, d_min = b$d_min, d_max = b$d_max,
+             C = r$C, p_mc = r$p_mc, n_links = r$n_links)
+}))
+res_C
+```
+
+### Plot Geary’s C correlogram
+
+```{r, fig.height=4.2}
+res_C$mid <- (res_C$d_min + res_C$d_max)/2
+ggplot(res_C, aes(mid, C)) +
+  geom_hline(yintercept = 1, linetype = 2) +
+  geom_point() + geom_line() +
+  labs(x = "Distance (bin mid, m)", y = "Geary's C",
+       title = "Geary's C Correlogram (meuse: zinc)") +
+  theme_minimal()
+```
+
+## 7) Use your own data
+
+Your input should be a POINT layer (sf) in a projected CRS (meters) with a numeric column.
+
+```{r, eval=FALSE}
+library(sf)
+my_pts <- st_read("my_points.gpkg")      # or st_read("my_points.shp")
+my_pts <- st_transform(my_pts, 32633)    # project to meters
+coords <- st_coordinates(my_pts)
+x <- my_pts$my_value
+
+# choose binning
+edges <- seq(0, 5000, length.out = 10 + 1)
+bins  <- data.frame(bin_id = 1:10, d_min = head(edges, -1), d_max = tail(edges, -1))
+
+# compute & plot as above (reuse moran_ring / geary_ring)
+```
+
+## 8) References
+
+- Moran, P. A. P. (1950). *Notes on continuous stochastic phenomena*. Biometrika 37(1/2), 17–23.
+- Geary, R. C. (1954). *The contiguity ratio and statistical mapping*. The Incorporated Statistician 5(3), 115–146.
+- Bivand, R., Pebesma, E., Gomez-Rubio, V. (2013). *Applied Spatial Data Analysis with R*. Springer.
