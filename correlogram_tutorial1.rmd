@@ -12,12 +12,15 @@ output:
 ---
 
 ```{r setup, message=FALSE, warning=FALSE}
+# Silence messages/warnings across the doc
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 library(sf)
 library(sp)
 library(spdep)
 library(ggplot2)
 
-# No external helpers: keep everything self-contained in this Rmd
+# If you ever see s2/geodesic messages for sf, you can disable s2 for this doc:
+# sf::sf_use_s2(FALSE)
 ```
 
 ## 1) What is a spatial correlogram?
