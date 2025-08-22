@@ -1,4 +1,4 @@
-﻿---`r`nencoding: UTF-8`r`ntitle: "Spatial Correlograms: Moranâ€™s I & Gearyâ€™s C by Distance"
+﻿---`r`nencoding: UTF-8`r`ntitle: "Spatial Correlograms: Moran's I  & Geary's C by Distance"
 author: "Daniel M. Parker (w/ help from ChatGPT)"
 date: "`r Sys.Date()`"
 output:
@@ -27,12 +27,12 @@ library(ggplot2)
 ## 1) What is a spatial correlogram?
 
 A **spatial correlogram** summarizes how **spatial autocorrelation** changes with **distance**. We compute a statistic
-(e.g., Moranâ€™s I or Gearyâ€™s C) for pairs of points in successive **distance bins** (rings), then plot the statistic
+(e.g., Moran's I or Geary's C) for pairs of points in successive **distance bins** (rings), then plot the statistic
 against the bin midpoints. This is conceptually different from a semivariogram (which uses half the average squared
 difference).
 
-- **Moranâ€™s I**: correlation-like; > 0 indicates positive autocorrelation, < 0 negative.
-- **Gearyâ€™s C**: dissimilarity index; < 1 indicates positive autocorrelation, > 1 negative.
+- **Moran's I**: correlation-like; > 0 indicates positive autocorrelation, < 0 negative.
+- **Geary's C**: dissimilarity index; < 1 indicates positive autocorrelation, > 1 negative.
 
 ## 2) Example data (meuse)
 
@@ -167,7 +167,7 @@ bins  <- data.frame(bin_id = 1:10, d_min = head(edges, -1), d_max = tail(edges, 
 
 ## 8) References
 
-- Moran, P. A. P. (1950). *Notes on continuous stochastic phenomena*. Biometrika 37(1/2), 17â€“23.
-- Geary, R. C. (1954). *The contiguity ratio and statistical mapping*. The Incorporated Statistician 5(3), 115â€“146.
+- Moran, P. A. P. (1950). *Notes on continuous stochastic phenomena*. Biometrika 37(1/2), 17–23.
+- Geary, R. C. (1954). *The contiguity ratio and statistical mapping*. The Incorporated Statistician 5(3), 115–146.
 - Bivand, R., Pebesma, E., Gomez-Rubio, V. (2013). *Applied Spatial Data Analysis with R*. Springer.
 
