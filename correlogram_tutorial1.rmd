@@ -1,4 +1,5 @@
-﻿---`r`nencoding: UTF-8`r`ntitle: "Spatial Correlograms: Moran's I  & Geary's C by Distance"
+﻿---
+title: "Spatial Correlograms: Moran's I  & Geary's C by Distance"
 author: "Daniel M. Parker (w/ help from ChatGPT)"
 date: "`r Sys.Date()`"
 output:
