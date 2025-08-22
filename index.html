@@ -353,10 +353,10 @@ display: none;
 
 
 <p>—<code>r</code>nencoding: UTF-8<code>r</code>ntitle: “Spatial
-Correlograms: Moranâ€™s I &amp; Gearyâ€™s C by Distance” author: “Daniel
-M. Parker (w/ help from ChatGPT)” date: “2025-08-22” output:
-html_document: toc: true toc_float: false number_sections: false
-code_folding: “hide” theme: cosmo<br />
+Correlograms: Moran’s I &amp; Geary’s C by Distance” author: “Daniel M.
+Parker (w/ help from ChatGPT)” date: “2025-08-22” output: html_document:
+toc: true toc_float: false number_sections: false code_folding: “hide”
+theme: cosmo<br />
 highlight: textmate css: styles.css<br />
 —</p>
 <pre class="r"><code># Silence messages/warnings across the doc
@@ -372,15 +372,14 @@ library(ggplot2)
 <h2>1) What is a spatial correlogram?</h2>
 <p>A <strong>spatial correlogram</strong> summarizes how <strong>spatial
 autocorrelation</strong> changes with <strong>distance</strong>. We
-compute a statistic (e.g., Moranâ€™s I or Gearyâ€™s C) for pairs of
-points in successive <strong>distance bins</strong> (rings), then plot
-the statistic against the bin midpoints. This is conceptually different
-from a semivariogram (which uses half the average squared
-difference).</p>
+compute a statistic (e.g., Moran’s I or Geary’s C) for pairs of points
+in successive <strong>distance bins</strong> (rings), then plot the
+statistic against the bin midpoints. This is conceptually different from
+a semivariogram (which uses half the average squared difference).</p>
 <ul>
-<li><strong>Moranâ€™s I</strong>: correlation-like; &gt; 0 indicates
+<li><strong>Moran’s I</strong>: correlation-like; &gt; 0 indicates
 positive autocorrelation, &lt; 0 negative.</li>
-<li><strong>Gearyâ€™s C</strong>: dissimilarity index; &lt; 1 indicates
+<li><strong>Geary’s C</strong>: dissimilarity index; &lt; 1 indicates
 positive autocorrelation, &gt; 1 negative.</li>
 </ul>
 </div>
@@ -544,9 +543,9 @@ bins  &lt;- data.frame(bin_id = 1:10, d_min = head(edges, -1), d_max = tail(edge
 <h2>8) References</h2>
 <ul>
 <li>Moran, P. A. P. (1950). <em>Notes on continuous stochastic
-phenomena</em>. Biometrika 37(1/2), 17â€“23.</li>
+phenomena</em>. Biometrika 37(1/2), 17–23.</li>
 <li>Geary, R. C. (1954). <em>The contiguity ratio and statistical
-mapping</em>. The Incorporated Statistician 5(3), 115â€“146.</li>
+mapping</em>. The Incorporated Statistician 5(3), 115–146.</li>
 <li>Bivand, R., Pebesma, E., Gomez-Rubio, V. (2013). <em>Applied Spatial
 Data Analysis with R</em>. Springer.</li>
 </ul>
