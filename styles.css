@@ -1,5 +1,0 @@
-/* styles.css: subtle typography & spacing to mirror your variogram page vibe */
-body { max-width: 900px; margin: 2rem auto; }
-h1, h2, h3 { line-height: 1.25; }
-pre, code { font-size: 0.95em; }
-.navbar, .tocify { box-shadow: none; }
