@@ -8,9 +8,8 @@ output:
     toc_float: false
     number_sections: false
     code_folding: "hide"
-    theme: cosmo        
-    highlight: textmate 
-    css: styles.css     
+    theme: cosmo
+    highlight: textmate
 ---
 
 ```{r setup, message=FALSE, warning=FALSE}
