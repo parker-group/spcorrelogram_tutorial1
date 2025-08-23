@@ -6,6 +6,7 @@ on:
     paths:
       - '**.Rmd'
       - '.github/workflows/render.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write
