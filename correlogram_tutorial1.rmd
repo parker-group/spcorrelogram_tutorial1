@@ -28,11 +28,195 @@ library(ggplot2)
 
 A **spatial correlogram** summarizes how **spatial autocorrelation** changes with **distance**. We compute a statistic
 (e.g., Moran's I or Geary's C) for pairs of points in successive **distance bins** (rings), then plot the statistic
-against the bin midpoints. This is conceptually different from a semivariogram (which uses half the average squared
-difference).
+against the bin midpoints. This idea is closely related to a **semivariogram**, which also examines how similarity (or
+dissimilarity) changes with distance. The key difference is in the statistic being plotted:
 
-- **Moran's I**: correlation-like; > 0 indicates positive autocorrelation, < 0 negative.
-- **Geary's C**: dissimilarity index; < 1 indicates positive autocorrelation, > 1 negative.
+- **Correlograms (Moran’s I, Geary’s C):** produce *dimensionless, bounded* measures.  
+  - **Moran's I:** correlation-like; values range roughly from –1 (negative autocorrelation) to +1 (positive autocorrelation).  
+  - **Geary's C:** a dissimilarity index centered at 1; values <1 indicate positive autocorrelation (similar neighbors), values >1 indicate negative autocorrelation (neighbors are dissimilar).  
+  These measures are easy to interpret as correlation-like or ratio statistics.
+
+- **Semivariograms:** compute *half the average squared difference* between values at a given distance. This makes them
+  **variance-like**: always non-negative, in squared units of the data (e.g., if your variable is in mg/kg, the
+  semivariogram is in (mg/kg)²). Unlike Moran’s I or Geary’s C, semivariogram values are **not bounded**; instead they
+  typically increase with distance until reaching the overall variance of the dataset (the “sill”).
+
+Both correlograms and semivariograms therefore use distance bands to summarize spatial dependence. Geary’s C is
+especially similar to a semivariogram in that higher values indicate greater dissimilarity, whereas Moran’s I is more
+directly comparable to a correlation coefficient.
+
+> **Note on dispersion:**  
+> One especially useful feature of **Moran’s I** is that it can take **negative values**, which indicate *dispersion* (sometimes called over-dispersion or checkerboard patterns). In this case, nearby observations tend to be more dissimilar than expected under randomness, reflecting a regular spacing of values. This is something that the **semivariogram** (always non-negative, variance-like) cannot show directly, and while **Geary’s C** values greater than 1 also reflect dissimilarity, they are less straightforward to interpret in terms of clear dispersion. In practice, Moran’s I is therefore often the easiest tool for diagnosing whether a spatial pattern is clustered, random, or dispersed.
+
+### Toy lattice examples of Moran's I
+
+The three examples below visualize **dispersion (I ≈ −1)**, **no spatial autocorrelation (I ≈ 0)**, and **clustering (I ≈ +1)** on a simple 5×5 lattice.  
+Left panel: the grid (white = −1, dark blue = +1).  
+Right panel: Moran scatterplot with **counts** at each unique point to avoid overlapping labels. The dashed line’s slope equals **Moran’s I** and is labeled near the center.
+
+#### Dispersion (Moran's I ≈ −1)
+
+```{r moran_toy_neg1, message=FALSE, warning=FALSE, fig.height=5, fig.width=10}
+# 5×5 checkerboard with alternating +/-1
+nr <- 5; nc <- 5
+grid_vals <- outer(1:nr, 1:nc, function(i, j) ifelse((i + j) %% 2 == 0, 1, -1))
+z <- as.numeric(t(grid_vals))
+
+# Rook neighbors & weights
+nb <- spdep::cell2nb(nr, nc, type = "rook", torus = FALSE)
+lw <- spdep::nb2listw(nb, style = "W", zero.policy = TRUE)
+
+# Moran's I & spatial lag
+mi   <- spdep::moran.test(z, lw, zero.policy = TRUE)
+lagz <- spdep::lag.listw(lw, z, zero.policy = TRUE)
+
+# Standardized coords for Moran scatterplot
+zs   <- as.numeric(scale(z))
+lz_s <- as.numeric(scale(lagz))
+
+# Collapse duplicates and count multiplicities
+zr <- round(zs, 4); lr <- round(lz_s, 4)
+df <- data.frame(z = zr, l = lr)
+counts <- aggregate(list(n = rep(1, nrow(df))), by = list(z = df$z, l = df$l), FUN = sum)
+
+op <- par(mfrow = c(1, 2), mar = c(4, 4, 3, 1))
+
+# (1) Grid
+image(t(apply(grid_vals, 2, rev)), axes = FALSE, col = c("white", "#08306b"))
+box()
+title(sprintf("Dispersion (Moran's I ≈ %.2f)", mi$estimate[1]))
+
+# (2) Moran scatterplot with counts
+plot(zs, lz_s, xlab = "Standardized z", ylab = "Spatial lag of z",
+     main = "Moran scatterplot", xlim = c(-1.2, 1.2), ylim = c(-1.2, 1.2), type = "n")
+abline(h = 0, v = 0, lty = 2)
+fit <- lm(lz_s ~ zs)
+abline(fit, lty = 2, lwd = 2)
+text(0.1, -0.1, sprintf("Moran's I = %.2f", mi$estimate[1]), cex = 0.9)
+points(counts$z, counts$l, pch = 16, cex = 1.2)
+text(counts$z, counts$l, labels = counts$n, pos = 3, cex = 0.9)
+
+par(op)
+```
+
+#### No spatial autocorrelation (Moran's I ≈ 0)
+
+```{r moran_toy_zero, message=FALSE, warning=FALSE, fig.height=5, fig.width=10}
+set.seed(123)  # change to try other random layouts
+nr <- 5; nc <- 5
+grid_vals <- matrix(sample(c(-1, 1), nr*nc, replace = TRUE), nrow = nr, ncol = nc)
+z <- as.numeric(t(grid_vals))
+
+nb <- spdep::cell2nb(nr, nc, type = "rook", torus = FALSE)
+lw <- spdep::nb2listw(nb, style = "W", zero.policy = TRUE)
+
+mi   <- spdep::moran.test(z, lw, zero.policy = TRUE)
+lagz <- spdep::lag.listw(lw, z, zero.policy = TRUE)
+
+zs   <- as.numeric(scale(z))
+lz_s <- as.numeric(scale(lagz))
+
+zr <- round(zs, 4); lr <- round(lz_s, 4)
+df <- data.frame(z = zr, l = lr)
+counts <- aggregate(list(n = rep(1, nrow(df))), by = list(z = df$z, l = df$l), FUN = sum)
+
+op <- par(mfrow = c(1, 2), mar = c(4, 4, 3, 1))
+
+image(t(apply(grid_vals, 2, rev)), axes = FALSE, col = c("white", "#08306b"))
+box()
+title(sprintf("Random (Moran's I ≈ %.2f)", mi$estimate[1]))
+
+plot(zs, lz_s, xlab = "Standardized z", ylab = "Spatial lag of z",
+     main = "Moran scatterplot", xlim = c(-1.2, 1.2), ylim = c(-1.2, 1.2), type = "n")
+abline(h = 0, v = 0, lty = 2)
+fit <- lm(lz_s ~ zs)
+abline(fit, lty = 2, lwd = 2)
+text(0.1, 0.1, sprintf("Moran's I = %.2f", mi$estimate[1]), cex = 0.9)
+points(counts$z, counts$l, pch = 16, cex = 1.2)
+text(counts$z, counts$l, labels = counts$n, pos = 3, cex = 0.9)
+
+par(op)
+```
+
+#### Clustering (Moran's I ≈ +1)
+
+```{r moran_toy_pos1, message=FALSE, warning=FALSE, fig.height=5, fig.width=10}
+nr <- 5; nc <- 5
+grid_vals <- matrix(-1, nrow = nr, ncol = nc)
+grid_vals[1:3, ] <- 1  # large +1 block above, -1 block below
+z <- as.numeric(t(grid_vals))
+
+nb <- spdep::cell2nb(nr, nc, type = "rook", torus = FALSE)
+lw <- spdep::nb2listw(nb, style = "W", zero.policy = TRUE)
+
+mi   <- spdep::moran.test(z, lw, zero.policy = TRUE)
+lagz <- spdep::lag.listw(lw, z, zero.policy = TRUE)
+
+zs   <- as.numeric(scale(z))
+lz_s <- as.numeric(scale(lagz))
+
+zr <- round(zs, 4); lr <- round(lz_s, 4)
+df <- data.frame(z = zr, l = lr)
+counts <- aggregate(list(n = rep(1, nrow(df))), by = list(z = df$z, l = df$l), FUN = sum)
+
+op <- par(mfrow = c(1, 2), mar = c(4, 4, 3, 1))
+
+image(t(apply(grid_vals, 2, rev)), axes = FALSE, col = c("white", "#08306b"))
+box()
+title(sprintf("Clustering (Moran's I ≈ %.2f)", mi$estimate[1]))
+
+plot(zs, lz_s, xlab = "Standardized z", ylab = "Spatial lag of z",
+     main = "Moran scatterplot", xlim = c(-1.2, 1.2), ylim = c(-1.2, 1.2), type = "n")
+abline(h = 0, v = 0, lty = 2)
+fit <- lm(lz_s ~ zs)
+abline(fit, lty = 2, lwd = 2)
+text(0.1, 0.1, sprintf("Moran's I = %.2f", mi$estimate[1]), cex = 0.9)
+points(counts$z, counts$l, pch = 16, cex = 1.2)
+text(counts$z, counts$l, labels = counts$n, pos = 3, cex = 0.9)
+
+par(op)
+```
+
+> **Why “Standardized z”?** The Moran scatterplot convention is to use standardized values (mean 0, variance 1) on both axes so results are comparable across datasets. For a beginner-friendly variant, you can relabel the axes to “Cell value (±1)” and “Spatial lag (mean of neighbors)” and use unstandardized values.
+
+
+
+### Illustrative comparison: correlogram vs. semivariogram
+
+```{r fig.height=4.5, fig.width=8, fig.cap="Illustrative (simulated) examples. LEFT: a correlogram (Moran’s I) oscillates around 0 and decays toward 0 with increasing distance (dashed line at 0). RIGHT: a semivariogram starts near 0 and rises toward a sill (here ≈1; dashed line), reflecting increasing dissimilarity with distance. Both are shown over distance bins; shapes are schematic and not fitted to data."}
+# Simulated, schematic curves for teaching/visualization only
+
+# Distance bins (arbitrary units, e.g., meters)
+d <- seq(0, 3000, by = 250)
+
+# Correlogram-like curve (bounded, correlation-style; wiggles decay to ~0)
+set.seed(1)
+moran_I <- cos(d/800) * exp(-d/2000) + rnorm(length(d), 0, 0.05)
+
+# Semivariogram-like curve (variance-style; rises to a sill ≈ 1)
+semivar <- 1 - exp(-d/800) + rnorm(length(d), 0, 0.02)
+
+op <- par(mfrow = c(1, 2), mar = c(4, 4, 3, 1))
+
+# Correlogram panel
+plot(d, moran_I, type = "b", pch = 16, ylim = c(-1, 1),
+     xlab = "Distance", ylab = "Moran's I",
+     main = "Illustrative Correlogram")
+abline(h = 0, lty = 2)
+
+# Semivariogram panel
+plot(d, semivar, type = "b", pch = 16, ylim = c(0, 1.2),
+     xlab = "Distance", ylab = "Semivariance",
+     main = "Illustrative Semivariogram")
+abline(h = 1, lty = 2)
+
+par(op)
+```
+
+> **Note:** These curves are **simulated** to highlight interpretation, not estimated from real data.  
+> - Correlogram (left): dimensionless, bounded statistic (Moran’s I), typically decays toward 0 as spatial autocorrelation weakens with distance.  
+> - Semivariogram (right): variance-like, non-negative statistic that usually increases with distance and levels off at a **sill** near the overall variance.
+
 
 ## 2) Example data (meuse)
 
