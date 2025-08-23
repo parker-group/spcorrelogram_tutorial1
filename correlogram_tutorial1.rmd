@@ -75,7 +75,7 @@ ring_listw <- function(coords, d_min, d_max, zero_ok = TRUE) {
 }
 ```
 
-## 5) Moranâ€™s I correlogram with permutation p-values
+## 5) Moran's I correlogram with permutation p-values
 
 ```{r}
 moran_ring <- function(x, coords, d_min, d_max, nsim = 499, zero_ok = TRUE) {
@@ -101,7 +101,7 @@ res_I <- do.call(rbind, lapply(seq_len(nrow(bins)), function(i) {
 res_I
 ```
 
-### Plot Moranâ€™s I correlogram
+### Plot Moran's I correlogram
 
 ```{r, fig.height=4.2}
 res_I$mid <- (res_I$d_min + res_I$d_max)/2
@@ -113,7 +113,7 @@ ggplot(res_I, aes(mid, I)) +
   theme_minimal()
 ```
 
-## 6) Gearyâ€™s C correlogram (optional)
+## 6) Geary's C correlogram (optional)
 
 ```{r}
 geary_ring <- function(x, coords, d_min, d_max, nsim = 499, zero_ok = TRUE) {
@@ -135,7 +135,7 @@ res_C <- do.call(rbind, lapply(seq_len(nrow(bins)), function(i) {
 res_C
 ```
 
-### Plot Gearyâ€™s C correlogram
+### Plot Geary's C correlogram
 
 ```{r, fig.height=4.2}
 res_C$mid <- (res_C$d_min + res_C$d_max)/2
