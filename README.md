@@ -12,8 +12,8 @@ A short, self-contained tutorial for building **spatial correlograms** in R—co
 
 ### A) View-only (R script shown, but already run for you)
 Open the rendered HTML tutorial:
-- `correlogram_tutorial1.html` (in this repo)
 - https://parker-group.github.io/spcorrelogram_tutorial1/
+- `correlogram_tutorial1.html` (in this repo)
 
 ### B) Hands-on (R installed on your computer - you run the script)
 In R:
