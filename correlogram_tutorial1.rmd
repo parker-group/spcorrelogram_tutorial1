@@ -331,6 +331,12 @@ ggplot(res_C, aes(mid, C)) +
        title = "Geary's C Correlogram (meuse: zinc)") +
   theme_minimal()
 ```
+# Next Step
+
+For practice with your own CSV data (and side-by-side comparison of correlograms and semivariograms), see:
+
+- [Spatial Dependence Part 2 repo](https://github.com/parker-group/spatial_depend_2)  
+- [Live tutorial site](https://parker-group.github.io/spatial_depend_2/)
 
 
 ## 8) References
