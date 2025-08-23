@@ -10,19 +10,19 @@ A short, self-contained tutorial for building **spatial correlograms** in R—co
 
 ## Quick start
 
-### A) View-only (no R)
+### A) View-only (R script shown, but already run for you)
 Open the rendered HTML tutorial:
 - `correlogram_tutorial1.html` (in this repo)
 - https://parker-group.github.io/spcorrelogram_tutorial1/
 
-### B) Hands-on (R installed)
+### B) Hands-on (R installed on your computer - you run the script)
 In R:
 ```r
 install.packages(c("spdep", "sp", "sf", "ggplot2", "rmarkdown"))  # first time
 rmarkdown::render("correlogram_tutorial1.rmd", output_format = "html_document")
 ```
 
-### C) Hands-on in your browser (no install)
+### C) Hands-on in your browser (no install - you run R from your browser)
 Click to launch an interactive RStudio session with Binder:
 
 [![Launch RStudio in Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/parker-group/spcorrelogram_tutorial1/HEAD?urlpath=rstudio)
