@@ -75,6 +75,11 @@ abline(h=0, lty=2)
 This minimal example runs the core correlogram workflow without needing any extra files.
 
 ---
+## Next Step
+Continue to [Spatial Dependence Part 2](https://github.com/parker-group/spatial_depend_2)  
+▶️ [View the live tutorial here](https://parker-group.github.io/spatial_depend_2/)
+
+---
 
 ## Notes
 - Binder setup files (`runtime.txt` and `install.R`) are included for reproducibility.
