@@ -96,7 +96,7 @@ text(0.1, -0.1, sprintf("Moran's I = %.2f", mi$estimate[1]), cex = 0.9)
 points(counts$z, counts$l, pch = 16, cex = 1.2)
 text(counts$z, counts$l, labels = counts$n, pos = 3, cex = 0.9)
 
-par(op)
+par(op) # restore original settings; not strictly needed in Rmd, but prevents layout carry-over in scripts
 ```
 
 #### No spatial autocorrelation (Moran's I ≈ 0)
@@ -135,7 +135,7 @@ text(0.1, 0.1, sprintf("Moran's I = %.2f", mi$estimate[1]), cex = 0.9)
 points(counts$z, counts$l, pch = 16, cex = 1.2)
 text(counts$z, counts$l, labels = counts$n, pos = 3, cex = 0.9)
 
-par(op)
+par(op) # restore original settings; not strictly needed in Rmd, but prevents layout carry-over in scripts
 ```
 
 #### Clustering (Moran's I ≈ +1)
@@ -174,11 +174,11 @@ text(0.1, 0.1, sprintf("Moran's I = %.2f", mi$estimate[1]), cex = 0.9)
 points(counts$z, counts$l, pch = 16, cex = 1.2)
 text(counts$z, counts$l, labels = counts$n, pos = 3, cex = 0.9)
 
-par(op)
+par(op) # restore original settings; not strictly needed in Rmd, but prevents layout carry-over in scripts
 ```
 
-> **Why “Standardized z”?** The Moran scatterplot convention is to use standardized values (mean 0, variance 1) on both axes so results are comparable across datasets. For a beginner-friendly variant, you can relabel the axes to “Cell value (±1)” and “Spatial lag (mean of neighbors)” and use unstandardized values.
-
+> **Why “Standardized z”?**  
+> The Moran scatterplot convention is to use standardized values (mean 0, variance 1) on both axes so results are comparable across datasets.
 
 
 ### Illustrative comparison: correlogram vs. semivariogram
@@ -210,7 +210,7 @@ plot(d, semivar, type = "b", pch = 16, ylim = c(0, 1.2),
      main = "Illustrative Semivariogram")
 abline(h = 1, lty = 2)
 
-par(op)
+par(op) # restore original settings; not strictly needed in Rmd, but prevents layout carry-over in scripts
 ```
 
 > **Note:** These curves are **simulated** to highlight interpretation, not estimated from real data.  
@@ -249,6 +249,7 @@ bins
 ```
 
 ## 4) Helper to build binary weights for a ring
+Here we define how to treat pairs of points within a given distance bin: if two points fall inside the same ring, we code them as **neighbors (1)**; if they fall outside the ring (across bins), we code them as **not neighbors (0)**. This creates a binary weights matrix for each ring.
 
 ```{r}
 # Build binary weights for a distance ring [d_min, d_max)
@@ -331,23 +332,6 @@ ggplot(res_C, aes(mid, C)) +
   theme_minimal()
 ```
 
-## 7) Use your own data
-
-Your input should be a POINT layer (sf) in a projected CRS (meters) with a numeric column.
-
-```{r, eval=FALSE}
-library(sf)
-my_pts <- st_read("my_points.gpkg")      # or st_read("my_points.shp")
-my_pts <- st_transform(my_pts, 32633)    # project to meters
-coords <- st_coordinates(my_pts)
-x <- my_pts$my_value
-
-# choose binning
-edges <- seq(0, 5000, length.out = 10 + 1)
-bins  <- data.frame(bin_id = 1:10, d_min = head(edges, -1), d_max = tail(edges, -1))
-
-# compute & plot as above (reuse moran_ring / geary_ring)
-```
 
 ## 8) References
 
